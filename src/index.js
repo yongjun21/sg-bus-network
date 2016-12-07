@@ -3,7 +3,12 @@ import {fetchData} from './helpers'
 
 const url = 'http://datamall2.mytransport.sg/ltaodataservice/'
 
-const endpoints = ['BusServices', 'BusRoutes', 'BusStops']
+const endpoints = [
+  'BusServices',
+  'BusRoutes',
+  'BusStops',
+  // 'EstTravelTimes'
+]
 
 endpoints.forEach(ep => {
   fetchData(url + ep, 50).then(result => {
