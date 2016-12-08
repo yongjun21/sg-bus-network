@@ -1,6 +1,6 @@
 import graph from '../data/graph.json'
 import fs from 'fs'
-import isNull from 'lodash/isNull'
+import _ from 'lodash'
 
 const googleMapsClient = require('@google/maps').createClient({
   key: process.env.GOOGLE_MAPS_API_KEY,
@@ -8,8 +8,9 @@ const googleMapsClient = require('@google/maps').createClient({
   Promise
 })
 
-queryPolyline(graph).then(graph => {
-  fs.writeFileSync('data/graph.json', JSON.stringify(graph, null, '\t'))
+const keyedGraph = _.keyBy(graph, edge => edge.start + '.' + edge.end)
+queryPolyline(keyedGraph).then(graph => {
+  fs.writeFileSync('data/graph.json', JSON.stringify(_.values(graph), null, '\t'))
 })
 
 export default function queryPolyline (graph) {
@@ -29,7 +30,7 @@ export default function queryPolyline (graph) {
   return Promise.all(polylineQueries)
     .then(polylines => {
       polylines
-        .filter(v => !isNull(v))
+        .filter(v => !_.isNull(v))
         .forEach(([k, v]) => {
           graph[k].polyline = v
         })

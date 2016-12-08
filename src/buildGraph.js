@@ -15,23 +15,25 @@ export default function buildGraph () {
   Object.keys(grouped).forEach(key => {
     const sorted = _.sortBy(grouped[key], 'StopSequence')
     for (let i = 1; i < sorted.length; i++) {
-      const edge = sorted[i - 1].BusStopCode + '.' + sorted[i].BusStopCode
-      if (!(edge in graph)) graph[edge] = {service: []}
+      const start = sorted[i - 1].BusStopCode
+      const end = sorted[i].BusStopCode
+      const edge = start + '.' + end
+      if (!(edge in graph)) graph[edge] = {start, end, service: []}
       graph[edge].service.push(key)
     }
   })
-  return graph
+  return _.values(graph)
 }
 
 export function fillLatLng (graph) {
-  Object.keys(graph).forEach((key, i) => {
-    const [start, end] = key.split('.')
+  graph.forEach(edge => {
+    const {start, end} = edge
     const startStop = findBusStops(start)
     const endStop = findBusStops(end)
     if (!startStop || !endStop) return
     if (startStop.Latitude === 0 || startStop.Longitude === 0) return
     if (endStop.Latitude === 0 || endStop.Longitude === 0) return
-    graph[key].query = {
+    edge.query = {
       origin: [startStop.Latitude, startStop.Longitude],
       destination: [endStop.Latitude, endStop.Longitude]
     }
@@ -41,7 +43,7 @@ export function fillLatLng (graph) {
 
 function findBusStops (key) {
   if (!(key in keyedBusStops)) {
-    console.log(key)
+    console.log('Bus stop not found', key)
     return
   }
   return keyedBusStops[key]
