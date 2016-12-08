@@ -14,7 +14,7 @@ queryPolyline(graph).then(graph => {
 
 export default function queryPolyline (graph) {
   const polylineQueries = Object.keys(graph)
-    .slice(0, 1000)
+    .slice(0, 0)
     .filter(key => 'query' in graph[key])
     .map(key => {
       return googleMapsClient.directions(graph[key].query).asPromise()
