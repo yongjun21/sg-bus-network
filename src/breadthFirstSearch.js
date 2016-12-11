@@ -30,24 +30,32 @@ export default class BFS {
       pointer++
     }
 
-    Object.assign(visited, {
-      to (destination) {
+    return {
+      visited,
+      to (destination, limit) {
         if (!destination) throw new Error('Requires destination')
-
         if (!(destination in visited)) return null
 
-        const path = []
-        let target = destination
-        while (target) {
-          path.push(target)
-          target = visited[target] && visited[target][0]
+        const paths = []
+        function tracePath (path, next) {
+          if (limit) {
+            if (path.length > limit + 1) return
+          } else {
+            if (paths.length > 0) return
+          }
+          if (next) {
+            next.forEach(target => {
+              tracePath([...path, target], visited[target])
+            })
+          } else {
+            paths.push(path.reverse())
+          }
         }
-        path.reverse()
-        return path
-      }
-    })
+        tracePath([destination], visited[destination])
 
-    return visited
+        return _.sortBy(paths, p => p.length)
+      }
+    }
   }
 }
 
