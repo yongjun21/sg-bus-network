@@ -30,36 +30,41 @@ export default class BFS {
       pointer++
     }
 
-    return {
-      visited,
-      to (destination, limit) {
-        if (!destination) throw new Error('Requires destination')
-        if (!(destination in visited)) return null
+    this.origin = origin
+    this.visited = visited
 
-        const paths = []
-        function tracePath (path, next) {
-          if (limit) {
-            if (path.length > limit + 1) return
-          } else {
-            if (paths.length > 0) return
-          }
-          if (next) {
-            next.forEach(target => {
-              tracePath([...path, target], visited[target])
-            })
-          } else {
-            paths.push(path.reverse())
-          }
-        }
-        tracePath([destination], visited[destination])
+    return this
+  }
 
-        return _.sortBy(paths, p => p.length)
+  to (destination, limit) {
+    if (!this.visited) throw new Error('Origin not set')
+    if (!destination) throw new Error('Requires destination')
+
+    if (!(destination in this.visited)) return null
+
+    const paths = []
+    const visited = this.visited
+    function tracePath (path, next) {
+      if (limit) {
+        if (path.length > limit + 1) return
+      } else {
+        if (paths.length > 0) return
+      }
+      if (next) {
+        next.forEach(target => {
+          tracePath([...path, target], visited[target])
+        })
+      } else {
+        paths.push(path.reverse())
       }
     }
+    tracePath([destination], visited[destination])
+
+    return _.sortBy(paths, p => p.length)
   }
 }
 
 const bfs = new BFS(graph)
-const test = bfs.from('76209').to('18151')
+const test = bfs.from('76209').to('18151', 25)
 
 fs.writeFileSync('data/test.json', JSON.stringify(test, null, '\t'))
