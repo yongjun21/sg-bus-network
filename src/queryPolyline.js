@@ -1,4 +1,4 @@
-import graph from '../data/graph.json'
+import networkGraph from '../data/graph.json'
 import fs from 'fs'
 import _ from 'lodash'
 
@@ -8,17 +8,18 @@ const googleMapsClient = require('@google/maps').createClient({
   Promise
 })
 
-const keyedGraph = _.keyBy(graph, edge => edge.start + '.' + edge.end)
-queryPolyline(keyedGraph).then(graph => {
-  fs.writeFileSync('data/graph.json', JSON.stringify(_.values(graph), null, '\t'))
+queryPolyline(networkGraph).then(graph => {
+  fs.writeFileSync('data/graph.json', JSON.stringify(graph, null, '\t'))
 })
 
 export default function queryPolyline (graph) {
-  const polylineQueries = Object.keys(graph)
+  const keyedGraph = _.keyBy(graph, edge => edge.start + '.' + edge.end)
+
+  const polylineQueries = Object.keys(keyedGraph)
     .slice(0, 0)
-    .filter(key => 'query' in graph[key])
+    .filter(key => 'query' in keyedGraph[key])
     .map(key => {
-      return googleMapsClient.directions(graph[key].query).asPromise()
+      return googleMapsClient.directions(keyedGraph[key].query).asPromise()
         .then(res => res.json)
         .then(json => {
           if (json.status !== 'OK') return null
@@ -32,9 +33,9 @@ export default function queryPolyline (graph) {
       polylines
         .filter(v => !_.isNull(v))
         .forEach(([k, v]) => {
-          graph[k].polyline = v
+          keyedGraph[k].polyline = v
         })
-      return graph
+      return _.values(keyedGraph)
     })
     .catch(err => { throw err })
 }
